@@ -24,15 +24,19 @@ echo "Customizing $BOARD $BOARD_VENDOR"
 # Implement them to build script
 
 
+# ⚡ Bolt: This script previously used multiple `rm` commands, spawning a new process for each file.
+# By combining them into a single `find` command, we traverse the filesystem only once and use a single process,
+# making it significantly more efficient for cleaning up APT sources.
 echo "Remove MS and GH sources as we ship them via our repo"
-[[ -f /etc/apt/sources.list.d/discord.list ]] && rm -f /etc/apt/sources.list.d/discord.list
-[[ -f /etc/apt/sources.list.d/vscode.list ]] && rm -f /etc/apt/sources.list.d/vscode.list
-[[ -f /etc/apt/sources.list.d/githubcli.list ]] && rm -f /etc/apt/sources.list.d/githubcli.list
+find /etc/apt/sources.list.d/ \
+  -name 'discord.list' -o \
+  -name 'vscode.list' -o \
+  -name 'githubcli.list' -o \
+  -name 'oibaf-ubuntu-graphics-drivers-*.*' -o \
+  -name 'xtradeb-ubuntu-apps-*.*' -o \
+  -name 'liujianfeng1994-ubuntu-chromium-*.*' \
+  -delete
 [[ -f /etc/apt/preferences.d/99-neon-base-files ]] && rm -f /etc/apt/preferences.d/99-neon-base-files
-
-# ⚡ Bolt: Combine multiple find commands into one for performance.
-# This avoids spawning multiple processes and traversing the filesystem repeatedly.
-find /etc/apt/sources.list.d/ -name 'oibaf-ubuntu-graphics-drivers-*.*' -o -name 'xtradeb-ubuntu-apps-*.*' -o -name 'liujianfeng1994-ubuntu-chromium-*.*' -delete
 
 # release based
 	case $RELEASE in
