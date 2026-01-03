@@ -41,17 +41,15 @@ on:
         options:
         # branches
         - main
-        - sunxi-6.18-v3
-        - sunxi-6.18-v2
-        - v25.11
+        - rkfix
         - update-kernel-configs
+        - v25.11
         - sunxi
         - coderabbitai/docstrings/2e13998
         - revert-8583-fix-atf-compile
         - test
         - v25.08
         - v25.05
-        - revert-8484-add-and-enable-lte-em05-driver
         - igorpecovnik-patch-2
         - igorpecovnik-patch-1
         - logofix
@@ -60,6 +58,8 @@ on:
         - opi5-mainline-uboot-update
         - prepre
         - fixper
+        - bump-6.15-collab
+        - coderabbitai/docstrings/756dff9
         default: 'main'
       board:
         type: choice
@@ -188,6 +188,7 @@ on:
         - mekotronics-r58x-pro
         - melea1000
         - mixtile-blade3
+        - mixtile-core3588e
         - mixtile-edge2
         - mk808c
         - mksklipad50
@@ -515,6 +516,9 @@ env:
 
   # Added to every build, even the prepare job.
   EXTRA_PARAMS_ALL_BUILDS: "${{ inputs.extraParamsAllBuilds || 'UPLOAD_TO_OCI_ONLY=yes' }}"
+
+  # Storage deployment path
+  TARGET_PATH: "apps/"
 
   # Version management
   VERSION_OVERRIDE: "${{ github.event.inputs.versionOverride }}"
@@ -2441,8 +2445,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -2815,8 +2819,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -3189,8 +3193,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -3563,8 +3567,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -3937,8 +3941,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -4311,8 +4315,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -4685,8 +4689,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -5059,8 +5063,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -5433,8 +5437,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -5807,8 +5811,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -6181,8 +6185,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -6555,8 +6559,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -6929,8 +6933,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -7303,8 +7307,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -7677,8 +7681,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -8051,8 +8055,8 @@ jobs:
 
       - name: "Upload artefacts except .asc, .sha and .torrent"
         timeout-minutes: 60
-        #if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
-        if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        if: ${{ ( github.event.inputs.nightlybuild || 'no' ) == 'yes' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
+        #if: ${{ env.RELEASE_REPOSITORY == 'os' || env.RELEASE_REPOSITORY == 'community' || env.RELEASE_REPOSITORY == 'distribution' }}
         uses: ncipollo/release-action@v1
         with:
           repo: "${{ env.RELEASE_REPOSITORY }}"
@@ -8187,30 +8191,10 @@ jobs:
 
   publish-debs-to-repo:
     name: "Download artifacts from ORAS cache"
-    runs-on: [ repository ]
+    runs-on: ubuntu-latest
     if: ${{ !failure() && !cancelled() && github.event.inputs.targetsFilterInclude == '' && inputs.ref == '' }} # eg: run if dependencies worked. See https://github.com/orgs/community/discussions/45058#discussioncomment-4817378
     needs: [ "matrix_prep", "all-artifacts-ready" ]
     steps:
-
-      - name: "Runner clean ${{ needs.matrix_prep.outputs.version }}"
-        uses: armbian/actions/runner-clean@main
-
-      # Prepare dependencies.
-      - name: Install dependencies
-        run: |
-          missing=()
-
-          [ -x /usr/bin/gpg ]      || missing+=("gnupg2")
-          [ -x /usr/bin/reprepro ] || missing+=("reprepro")
-          [ -x /usr/bin/lftp ]     || missing+=("lftp")
-
-          if [ ${#missing[@]} -gt 0 ]; then
-            echo "Installing missing packages: ${missing[*]}"
-            sudo apt-get update
-            sudo apt-get install -y "${missing[@]}"
-          else
-            echo "All required packages already installed."
-          fi
 
       # Login to ghcr.io, for later uploading rootfs to ghcr.io
       - name: Docker Login to GitHub Container Registry
@@ -8220,20 +8204,15 @@ jobs:
           username: "${{ github.repository_owner }}" # GitHub username or org
           password: "${{ secrets.GITHUB_TOKEN }}"    # GitHub actions builtin token. repo has to have pkg access.
 
-      # cleanup the place where we will clone the userpatches repo, to avoid git going insane and cleaning everything later
-      - name: Cleanup userpatches repo
-        if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
-        run: rm -rf userpatches.repo
-
       - name: Checkout build repo
-        uses: actions/checkout@v6 # We don't need to clone git, really. A wget would suffice for GH-hosted runners. But using clone is better for Igor-hosted runners.
+        uses: actions/checkout@v6
         with:
           repository: ${{ env.BUILD_REPOSITORY }}
           ref: ${{ needs.matrix_prep.outputs.build-sha1 }}
           fetch-depth: 0
-          clean: false # true is default. it *will* delete the hosts /dev if mounted inside.
+          path: build
+          clean: false
 
-      # clone the userpatches repo (`armbian/os`)
       - name: "Checkout userpatches repo: ${{env.USERPATCHES_REPOSITORY}}#${{env.USERPATCHES_REF}}"
         uses: actions/checkout@v6
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
@@ -8241,45 +8220,40 @@ jobs:
           repository: ${{ env.USERPATCHES_REPOSITORY }}
           ref: ${{ env.USERPATCHES_REF }}
           fetch-depth: 0
-          clean: false # true is default.
-          path: userpatches.repo
+          clean: false
+          path: os
 
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
-          mkdir -pv userpatches
-          rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
-          #rm -rf userpatches.repo
 
-      # Clean off output/info, if any
-      # Clean off debs and debs-beta
-      - name: Cleanup output/info
-        run: |
-          rm -rfv output/info output/debs output/debs-beta
-          mkdir -pv output
+          rsync -av os/${{env.USERPATCHES_DIR}}/. build/userpatches/
 
       # Download the artifacts (output/info) produced by the prepare-matrix job.
       - name: Download artifacts
         uses: actions/download-artifact@v7
         with:
           name: build-info-json
-          path: output/info
+          path: build/output/info
 
       # List the artifacts we downloaded
       - name: List artifacts
         run: |
-          ls -laht output/info
 
-      - name: Download the debs
-        id: download-debs
+          ls -laht build/output/info
+
+      - name: Run debs-to-repo download
+        env:
+          BETA: ${{ github.event.inputs.nightlybuild == 'true' && 'yes' || 'no' }}
         run: |
-          bash ./compile.sh debs-to-repo-download REVISION="${{ needs.matrix_prep.outputs.version }}" BETA=${{ github.event.inputs.nightlybuild || 'no' }} SHARE_LOG=yes ${{env.EXTRA_PARAMS_ALL_BUILDS}}
 
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.GPG_KEY1 }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE1 }}
+          set -euo pipefail
+          cd build
+          ./compile.sh debs-to-repo-download \
+            REVISION="${{ needs.matrix_prep.outputs.version }}" \
+            BETA="$BETA" \
+            SHARE_LOG=yes \
+            ${{ env.EXTRA_PARAMS_ALL_BUILDS }}
 
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
@@ -8288,52 +8262,44 @@ jobs:
           known_hosts: ${{ secrets.KNOWN_HOSTS_ARMBIAN_UPLOAD }}
           if_key_exists: replace
 
-      - name: "Fix permissions and sync artifacts"
+      - name: "Upload artifacts"
         run: |
+
           set -euo pipefail
 
-          echo "Fix permissions on output/"
-          sudo chown -R "$USER:$USER" output/.
-
-          # Decide target subfolder
-          TARGET=""
-          if [ "${{ github.event.inputs.skipImages }}" = "no" ] || [ "'no'" = "no" ]; then
-            echo "Save to user's partial folder"
-            TARGET="partial/${{ github.actor }}/"
-          fi
-
-          if [ "$GITHUB_WORKFLOW" = "Build All Stable Artifacts (cronjob)" ]; then
-              echo "Nightly workflow detected"
-              TARGET="stable-daily/"
-          fi
-
-          echo "Fix permissions on /incoming"
-          sudo chown -R "${{ secrets.HOST_UPLOAD_USER }}:${{ secrets.HOST_UPLOAD_USER }}" /incoming/.
-
-          echo "Sync all parts (only debs***)"
+          echo "Sync debs and debs-beta"
           rsync -e "ssh -p ${{ secrets.HOST_UPLOAD_PORT }} -o StrictHostKeyChecking=accept-new" \
-                -arvc \
-                --include='debs***' \
-                --exclude='*' \
-                --remove-source-files \
+                -rvc \
                 --delete \
-                output/ \
-                "${{ secrets.HOST_UPLOAD_USER }}@${{ secrets.HOST_UPLOAD }}:storage/${TARGET}"
-
-          echo "Clean up empty directories in output/"
-          find output/. -type d -empty -delete
+                --remove-source-files \
+                --prune-empty-dirs \
+                --include='debs/' \
+                --include='debs-beta/' \
+                --include='debs/***/' \
+                --include='debs-beta/***/' \
+                --include='debs/*.deb' \
+                --include='debs-beta/*.deb' \
+                --include='debs/**/*.deb' \
+                --include='debs-beta/**/*.deb' \
+                --exclude='*' \
+                --omit-dir-times \
+                --no-perms \
+                --no-owner \
+                --no-group \
+                build/output/ \
+                "${{ secrets.HOST_UPLOAD_USER }}@${{ secrets.HOST_UPLOAD }}:storage/incoming/${{ env.TARGET_PATH }}"
 
       - name: "Run repository update action"
         if: ${{ (github.event.inputs.skipImages || 'no') == 'yes' }}
         uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ secrets.DISPATCH }}
-          repository: armbian/os
+          repository: armbian/armbian.github.io
           event-type: "Repository update"
+          client-payload: '{"target": "${{ env.TARGET_PATH }}"}'
 
       - name: "Logs debs-to-repo-download: ${{ steps.download-debs.outputs.logs_url }}"
-        run: |
-          echo "Logs debs-to-repo-download: ${{ steps.download-debs.outputs.logs_url }}"
+        run: ':'
 
     outputs:
 
@@ -8398,7 +8364,7 @@ jobs:
         with:
           token: ${{ secrets.DISPATCH }}
           repository: armbian/armbian.github.io
-          event-type: "Mirror"
+          event-type: "Infrastructure: Mirror artifacts"
           client-payload: '{"pull_repository": "armbian/${{ env.RELEASE_REPOSITORY }}", "cdn_tag": "${{ env.RELEASE_REPOSITORY }}"}'
 
       # Run webindex update action
