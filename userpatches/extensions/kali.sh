@@ -40,7 +40,9 @@ function post_customize_image__kali_tools() {
 		# Copyright (c) Authors: https://www.armbian.com/authors
 		#
 		echo -e "\n\e[0;92mAdditional security oriented packages you can install:\x1B[0m (sudo apt install kali-tools-package_name)\n"
-		apt list 2>/dev/null | grep kali-tools | grep -v installed | cut -d"/" -f1 | pr -2 -t
+		# ⚡ Bolt: Use `apt-cache search` and `comm` for a significant performance boost over the original `apt list | grep` pipeline.
+		# This command efficiently finds all `kali-tools` packages and filters out any that are already installed.
+		comm -23 <(apt-cache search --names-only kali-tools | cut -d' ' -f1 | sort) <(dpkg-query -W -f='${Package}\n' '*kali-tools*' 2>/dev/null | sort) | pr -2 -t
 		echo ""
 	armbian-kali-motd
 	run_host_command_logged chmod +x "${SDCARD}"/etc/armbian/kali.sh
