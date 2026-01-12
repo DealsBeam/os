@@ -43,9 +43,11 @@ on:
         options:
         # branches
         - main
-        - repo_fix
+        - singlemode
+        - update-maintainers
+        - always
+        - feature/new-parallel-repo-architecture
         - rkfix
-        - update-kernel-configs
         - v25.11
         - sunxi
         - coderabbitai/docstrings/2e13998
@@ -60,8 +62,6 @@ on:
         - coderabbitai/docstrings/20bTtA
         - opi5-mainline-uboot-update
         - prepre
-        - fixper
-        - bump-6.15-collab
         default: 'main'
       board:
         type: choice
@@ -246,6 +246,7 @@ on:
         - olinux-som-a13
         - onecloud
         - oneplus-kebab
+        - orangepi-4a
         - orangepi-r1
         - orangepi-r1plus
         - orangepi-r1plus-lts
@@ -8299,7 +8300,11 @@ jobs:
           token: ${{ secrets.DISPATCH }}
           repository: armbian/armbian.github.io
           event-type: "Repository update"
-          client-payload: '{"target": "${{ env.TARGET_PATH }}"}'
+          client-payload: >
+            {
+              "target": "${{ env.TARGET_PATH }}",
+              "download_external": true
+            }
 
       - name: "Logs debs-to-repo-download: ${{ steps.download-debs.outputs.logs_url }}"
         run: ':'
