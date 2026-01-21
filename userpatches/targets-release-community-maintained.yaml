@@ -15,11 +15,11 @@ common-gha-configs:
         rootfs-arm64: [ "self-hosted", "Linux", "ARM64" , "fast" ]
         rootfs-amd64: [ "self-hosted", "Linux", "X64", "fast" ]
         rootfs-riscv64: [ "self-hosted", "Linux", "X64", "fast" ]
-        image-arm64: [ "images" ]
-        #image-armhf: [ "ubuntu-24.04-arm" ]
-        image-armhf: [ "images", "X64" ]
+        image-arm64: [ "images", "ARM64" ]
+        image-armhf: [ "ubuntu-24.04-arm" ]
         image-riscv64: [ "images", "X64" ]
         image-amd64: [ "images", "X64" ]
+
 
 lists:
 
@@ -134,6 +134,7 @@ lists:
     - { BOARD: nanopik1plus, BRANCH: current }
     - { BOARD: nanopim4, BRANCH: current, ENABLE_EXTENSIONS: "v4l2loopback-dkms,mesa-vpu" }
     - { BOARD: nanopineo4, BRANCH: current, ENABLE_EXTENSIONS: "v4l2loopback-dkms,mesa-vpu" }
+    - { BOARD: numaker-iot-ma35d16f90, BRANCH: vendor }
     - { BOARD: odroidhc4, BRANCH: current, ENABLE_EXTENSIONS: "mesa-vpu" }
     - { BOARD: odroidm1s, BRANCH: current }
     - { BOARD: odroidm2, BRANCH: edge }
@@ -146,7 +147,6 @@ lists:
     - { BOARD: orangepi3b, BRANCH: vendor, ENABLE_EXTENSIONS: "v4l2loopback-dkms,mesa-vpu" }
     - { BOARD: orangepi4, BRANCH: current, ENABLE_EXTENSIONS: "v4l2loopback-dkms,mesa-vpu" }
     - { BOARD: orangepi5-max, BRANCH: vendor }
-    - { BOARD: orangepi5-ultra, BRANCH: current }
     - { BOARD: orangepi5b, BRANCH: vendor }
     - { BOARD: orangepi5pro, BRANCH: vendor, ENABLE_EXTENSIONS: "v4l2loopback-dkms,mesa-vpu" }
     - { BOARD: orangepilite2, BRANCH: current }
@@ -171,8 +171,6 @@ lists:
     - { BOARD: radxa-zero3, BRANCH: vendor }
     - { BOARD: recore, BRANCH: current }
     - { BOARD: retro-lite-cm5, BRANCH: vendor }
-    - { BOARD: retroidpocket-rp5, BRANCH: current }
-    - { BOARD: retroidpocket-rpmini, BRANCH: current }
     - { BOARD: rk3318-box, BRANCH: current }
     - { BOARD: rk3328-heltec, BRANCH: current }
     - { BOARD: rk3566-box-demo, BRANCH: current }
