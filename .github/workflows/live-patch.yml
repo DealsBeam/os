@@ -52,6 +52,7 @@ jobs:
 
           for file in live-patch/*.sh;
           do
+              [ -e "$file" ] || continue
               cp $file $file.txt # to have web friendly version 
               echo ${{ secrets.GPG_PASSPHRASE1 }} | gpg --passphrase-fd 0 --armor --detach-sign --pinentry-mode loopback --batch --yes "$file"
           done
