@@ -41,7 +41,7 @@ on:
         options:
         # branches
         - main
-        - coderabbitai/docstrings/6245807
+        - update-kernel-configs
         - feature/docker-auto-pull-cronjob
         - update-version-lib/tools/shellcheck.sh-koalaman/shellcheck-null
         - singlemode
@@ -554,131 +554,6 @@ jobs:
           GITHUB_TOKEN: "${{ env.GH_TOKEN }}"
           TEAM: "Release manager"
 
-  sources_prep:
-    needs: team_check
-    name: "Store sources hashes"
-    runs-on: [ "self-hosted", "Linux", 'super' ]
-    steps:
-
-      # Clone the userpatches repo (`armbian/os`)
-      - name: "Checkout userpatches repo: ${{env.USERPATCHES_REPOSITORY}}#${{env.USERPATCHES_REF}}"
-        uses: actions/checkout@v6
-        if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
-        with:
-          repository: ${{ env.USERPATCHES_REPOSITORY }}
-          ref: ${{ env.USERPATCHES_REF }}
-          fetch-depth: 0
-          clean: false # true is default
-          path: os
-
-      # clone the build system repo (`armbian/build`)
-      - name: Checkout build repo
-        if: ${{ ( ! github.event.inputs.versionOverride ) && ( env.VERSION_BUMP == 'true' ) && ( inputs.ref == '' ) }}
-        uses: actions/checkout@v6
-        with:
-          repository: ${{ env.BUILD_REPOSITORY }}
-          ref: ${{ env.BUILD_REF }}
-          fetch-depth: 0
-          clean: false # true is default. it *will* delete the hosts /dev if mounted inside.
-          path: build
-
-      # clone the rkbin repo (`armbian/rkbin`)
-      - name: Checkout build repo
-        if: ${{ ( ! github.event.inputs.versionOverride ) && ( env.VERSION_BUMP == 'true' ) && ( inputs.ref == '' ) }}
-        uses: actions/checkout@v6
-        with:
-          repository: armbian/rkbin
-          ref: master
-          fetch-depth: 0
-          clean: false # true is default. it *will* delete the hosts /dev if mounted inside.
-          path: rkbin
-
-      # clone the build docker (`armbian/docker-armbian-build`)
-      - name: Checkout build repo
-        if: ${{ ( ! github.event.inputs.versionOverride ) && ( env.VERSION_BUMP == 'true' ) && ( inputs.ref == '' ) }}
-        uses: actions/checkout@v6
-        with:
-          repository: armbian/docker-armbian-build
-          ref: main
-          fetch-depth: 0
-          clean: false # true is default. it *will* delete the hosts /dev if mounted inside.
-          path: docker-armbian-build
-
-      # clone the build system repo (`armbian/documentation`)
-      - name: Checkout build repo
-        if: ${{ ( ! github.event.inputs.versionOverride ) && ( env.VERSION_BUMP == 'true' ) && ( inputs.ref == '' ) }}
-        uses: actions/checkout@v6
-        with:
-          repository: armbian/documentation
-          ref: master
-          fetch-depth: 0
-          clean: false # true is default. it *will* delete the hosts /dev if mounted inside.
-          path: documentation
-
-      # clone the armbian-config NG repo (`armbian/configng`)
-      - name: Checkout build repo
-        if: ${{ ( ! github.event.inputs.versionOverride ) && ( env.VERSION_BUMP == 'true' ) && ( inputs.ref == '' ) }}
-        uses: actions/checkout@v6
-        with:
-          repository: armbian/configng
-          ref: main
-          fetch-depth: 0
-          clean: false # true is default. it *will* delete the hosts /dev if mounted inside.
-          path: configng
-
-      - name: Prepare Git_sources JSON
-        if: ${{ ( ! github.event.inputs.versionOverride ) && ( env.VERSION_BUMP == 'true' ) && ( inputs.ref == '' ) }}
-        run: |
-
-          cd build
-          bash ./compile.sh targets
-          cat output/info/git_sources.json
-          BUILD=$(git rev-parse HEAD)
-          cd ../documentation
-          DOCUMENTATION=$(git rev-parse HEAD)
-          cd ../docker-armbian-build
-          DOCKER_ARMBIAN_BUILD=$(git rev-parse HEAD)
-          cd ../rkbin
-          RKBIN=$(git rev-parse HEAD)
-          cd ../configng
-          ARMBIANCONFIGNG=$(git rev-parse HEAD)
-          cd ..
-
-          # add build repository
-          sed -i '0,/{/s//{\n    "source": "https:\/\/github.com\/armbian\/build",    \n    "branch": "main",     \n    "sha1": "'$BUILD'"\n  },\n  &/' build/output/info/git_sources.json
-
-          # add documentation repository
-          sed -i '0,/{/s//{\n    "source": "https:\/\/github.com\/armbian\/documentation",    \n    "branch": "master",     \n    "sha1": "'$DOCUMENTATION'"\n  },\n  &/' build/output/info/git_sources.json
-
-          # add rkbin repository
-          sed -i '0,/{/s//{\n    "source": "https:\/\/github.com\/armbian\/rkbin",    \n    "branch": "master",     \n    "sha1": "'$RKBIN'"\n  },\n  &/' build/output/info/git_sources.json
-
-          # add armbianconfig repository
-          #sed -i '0,/{/s//{\n    "source": "https:\/\/github.com\/armbian\/configng",    \n    "branch": "main",     \n    "sha1": "'$ARMBIANCONFIGNG'"\n  },\n  &/' build/output/info/git_sources.json
-
-          # add docker-armbian-build repository
-          sed -i '0,/{/s//{\n    "source": "https:\/\/github.com\/armbian\/docker-armbian-build",    \n    "branch": "main",     \n    "sha1": "'$DOCKER_ARMBIAN_BUILD'"\n  },\n  &/' build/output/info/git_sources.json
-
-          cp build/output/info/git_sources.json os/
-
-      - name: Update scripts
-        if: ${{ ( ! github.event.inputs.versionOverride ) && ( env.VERSION_BUMP == 'true' ) && ( inputs.ref == '' ) }}
-        run: |
-
-          #sudo chown -R $USER:$USER .git
-          cd os
-          if git status --porcelain | grep .; then
-             git stash
-             git config --global user.email "info@armbian.com"
-             git config --global user.name "Armbianworker"
-             git config pull.rebase false
-             git pull --rebase
-             git stash apply
-             git add git_sources.json
-             git commit git_sources.json --allow-empty -m "Update external GIT commits"
-             git push
-          fi
-
   version_prep:
     needs: team_check
     name: "Bump version"
@@ -808,6 +683,14 @@ jobs:
           clean: false # true is default.
           path: userpatches
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       # clone the torrent lists
       - name: "Checkout torrent lists"
         uses: actions/checkout@v6
@@ -831,6 +714,9 @@ jobs:
 
           mkdir -pv build/userpatches
           rsync -av userpatches/${{env.USERPATCHES_DIR}}/. build/userpatches/
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. build/userpatches/
 
       - name: GitHub cache
         id: cache-restore
@@ -1199,6 +1085,13 @@ jobs:
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
 
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
+
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
         id: build
@@ -1260,6 +1153,13 @@ jobs:
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
 
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
@@ -1323,6 +1223,13 @@ jobs:
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
 
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
+
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
         id: build
@@ -1384,6 +1291,13 @@ jobs:
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
 
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
@@ -1447,6 +1361,13 @@ jobs:
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
 
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
+
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
         id: build
@@ -1508,6 +1429,13 @@ jobs:
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
 
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
@@ -1571,6 +1499,13 @@ jobs:
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
 
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
+
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
         id: build
@@ -1632,6 +1567,13 @@ jobs:
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
 
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
@@ -1695,6 +1637,13 @@ jobs:
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
 
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
+
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
         id: build
@@ -1756,6 +1705,13 @@ jobs:
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
 
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
@@ -1819,6 +1775,13 @@ jobs:
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
 
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
+
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
         id: build
@@ -1880,6 +1843,13 @@ jobs:
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
 
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
@@ -1943,6 +1913,13 @@ jobs:
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
 
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
+
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
         id: build
@@ -2004,6 +1981,13 @@ jobs:
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
 
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
@@ -2067,6 +2051,13 @@ jobs:
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
 
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
+
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
         id: build
@@ -2128,6 +2119,13 @@ jobs:
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
 
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
@@ -2191,6 +2189,13 @@ jobs:
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
 
+      - name: "Run only on GitHub-hosted"
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          echo "GitHub-hosted runner"
+          sudo ./compile.sh requirements
+          sudo chown -R "$(id -u):$(id -g)" .
+
       - name: Build  ${{matrix.desc}}
         timeout-minutes: 90
         id: build
@@ -2250,12 +2255,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -2627,12 +2643,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -3004,12 +3031,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -3381,12 +3419,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -3758,12 +3807,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -4135,12 +4195,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -4512,12 +4583,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -4889,12 +4971,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -5266,12 +5359,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -5643,12 +5747,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -6020,12 +6135,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -6397,12 +6523,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -6774,12 +6911,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -7151,12 +7299,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -7528,12 +7687,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -7905,12 +8075,23 @@ jobs:
           clean: false # true is default.
           path: userpatches.repo
 
+      - name: Checkout JSON artifacts repository
+        uses: actions/checkout@v6
+        with:
+          repository: armbian/armbian.github.io
+          ref: data
+          clean: false
+          path: armbian.github.io
+
       - name: "Put userpatches in place, and remove userpatches repo"
         if: ${{ ( env.USERPATCHES_REPOSITORY != '' ) && ( env.USERPATCHES_REF != '' ) }}
         run: |
           mkdir -pv userpatches
           rsync -av userpatches.repo/${{env.USERPATCHES_DIR}}/. userpatches/
           rm -rf userpatches.repo
+
+          # Use new release YAML targets
+          rsync -av armbian.github.io/data/release-targets/. userpatches/
 
       - name: "Cleanup leftover output"
         run: |
@@ -8371,7 +8552,7 @@ jobs:
     name: "Footer"
     runs-on: ubuntu-latest
     if: ${{ !failure() && !cancelled() && inputs.ref == '' && (github.event.inputs.nightlybuild || 'no') == 'yes' }}
-    needs: [ "matrix_prep", "all-artifacts-ready", "all-images-ready", "sources_prep"]
+    needs: [ "matrix_prep", "all-artifacts-ready", "all-images-ready"]
     steps:
 
       # Download workflow artifacts
@@ -8431,4 +8612,4 @@ jobs:
         with:
           token: ${{ secrets.DISPATCH }}
           repository: armbian/armbian.github.io
-          event-type: "Webindex update"
+          event-type: "Data: Update download index"
