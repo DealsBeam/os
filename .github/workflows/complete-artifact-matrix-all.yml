@@ -42,9 +42,13 @@ on:
         options:
         # branches
         - main
+        - patchfix
         - update-maintainers
-        - force_uboot_recomp
         - update-kernel-configs
+        - calamares
+        - dependabot/pip/setuptools-82.0.0
+        - v26.02
+        - force_uboot_recomp
         - update-version-lib/tools/shellcheck.sh-koalaman/shellcheck-null
         - singlemode
         - always
@@ -57,10 +61,6 @@ on:
         - test
         - v25.08
         - v25.05
-        - igorpecovnik-patch-2
-        - igorpecovnik-patch-1
-        - logofix
-        - coderabbitai/utg/20bTtA
         default: 'main'
       board:
         type: choice
@@ -148,6 +148,7 @@ on:
         - "sicXnull"
         - "spendist"
         - "sputnik2019"
+        - "sven-ola"
         - "teknoid"
         - "torte71"
         - "utlark"
